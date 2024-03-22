@@ -7,13 +7,6 @@ const defaultRouter = (req, res, next) => {
         "message": "Ping successfully"
     })
 }
-const coba = (req, res, next) => {
-    const { id } = req.params;
-    console.log(`Car ID`, id)
-    res.json({
-        "message": `the id ${id}`
-    })
-}
 const listCars = (req, res, next) => {
     res.status(200).json({
         "status": "okay",
@@ -43,4 +36,59 @@ const detailCars = (req, res) => {
     });
 }
 
-module.exports = { defaultRouter, listCars, detailCars, coba }
+const addNewCar = (req, res) => {
+    console.log(req.params);
+
+    const newCar = req.body;
+    let randomId = getRandomInt(1, 1000).toString();
+    randomId += getRandomInt(1, 1000).toString();
+    randomId += getRandomInt(1, 10000).toString();
+    newCar.id = randomId;
+    cars.push(newCar);
+    fs.writeFile(`${__dirname}/../data/cars.json`, JSON.stringify(cars), (err) => {
+        if (err) {
+            console.error(err); // Log the error for debugging
+            return res.status(500).json({ message: "Error writing file" }); // Send error response
+        }
+        res.status(201).json({
+            "status": "OK",
+            "data": {
+                car: newCar
+            }
+        });
+    });
+}
+const updateCar = (req, res) => {
+    const id = req.params.id;
+
+    const car = cars.find(car => car.id === id);
+    const carIndex = cars.findIndex(car => car.id === id)
+    if (carIndex === -1) {
+        return res.status(404).json({ message: "Car not found" });
+    }
+    console.log("Cust index", carIndex)
+    cars[carIndex] = { ...cars[carIndex], ...req.body }
+
+    fs.writeFile(`${__dirname}/../data/cars.json`, JSON.stringify(cars), (err) => {
+        if (err) {
+            console.error(err); // Log the error for debugging
+            return res.status(500).json({ message: "Error writing file" }); // Send error response
+        }
+        return res.status(200).json({
+            "status": "success  ",
+            "message": "data updated",
+            "data": {
+                car: cars[carIndex],
+                car
+            }
+        });
+    });
+}
+
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+module.exports = { defaultRouter, listCars, detailCars, addNewCar, updateCar }
