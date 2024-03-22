@@ -85,10 +85,34 @@ const updateCar = (req, res) => {
     });
 }
 
+const deleteCar = (req, res) => {
+    const id = req.params.id;
 
+    const car = cars.find(car => car.id === id);
+    const carIndex = cars.findIndex(car => car._id === id)
+    if (!car) {
+        res.status(404).json({
+            "status": "failed",
+            "message": `Data With this id ${id} Not found`
+        })
+    }
+
+    console.log("Cust index", carIndex)
+    cars.splice(carIndex, 1);
+    fs.writeFile(`${__dirname}/../data/cars.json`, JSON.stringify(cars), (err) => {
+        if (err) {
+            console.error(err); // Log the error for debugging
+            return res.status(500).json({ message: "Error writing file" }); // Send error response
+        }
+        return res.status(200).json({
+            "status": "success  ",
+            "message": "data deleted",
+        });
+    });
+}
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-module.exports = { defaultRouter, listCars, detailCars, addNewCar, updateCar }
+module.exports = { defaultRouter, listCars, detailCars, addNewCar, updateCar, deleteCar }
